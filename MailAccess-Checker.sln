@@ -1,0 +1,16 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MailAccess-Checker", "MailAccess-Checker\MailAccess-Checker.csproj", "{10593779-6B35-4BEF-87C4-3A35FB7FF31C}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{10593779-6B35-4BEF-87C4-3A35FB7FF31C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{10593779-6B35-4BEF-87C4-3A35FB7FF31C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{10593779-6B35-4BEF-87C4-3A35FB7FF31C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{10593779-6B35-4BEF-87C4-3A35FB7FF31C}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+EndGlobal

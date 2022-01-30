@@ -1,0 +1,11 @@
+C:\Users\diogo\Documents\Code\MailAccess-Checker\MailAccess-Checker\bin\Debug\MailAccess_Checker.exe
+C:\Users\diogo\Documents\Code\MailAccess-Checker\MailAccess-Checker\bin\Debug\MailAccess_Checker.pdb
+C:\Users\diogo\Documents\Code\MailAccess-Checker\MailAccess-Checker\bin\Debug\Colorful.Console.dll
+C:\Users\diogo\Documents\Code\MailAccess-Checker\MailAccess-Checker\bin\Debug\Leaf.xNet.dll
+C:\Users\diogo\Documents\Code\MailAccess-Checker\MailAccess-Checker\bin\Debug\Leaf.xNet.xml
+C:\Users\diogo\Documents\Code\MailAccess-Checker\MailAccess-Checker\obj\Debug\MailAccess-Checker.csproj.AssemblyReference.cache
+C:\Users\diogo\Documents\Code\MailAccess-Checker\MailAccess-Checker\obj\Debug\MailAccess-Checker.csproj.SuggestedBindingRedirects.cache
+C:\Users\diogo\Documents\Code\MailAccess-Checker\MailAccess-Checker\obj\Debug\MailAccess-Checker.csproj.CoreCompileInputs.cache
+C:\Users\diogo\Documents\Code\MailAccess-Checker\MailAccess-Checker\obj\Debug\MailAccess-Checker.csproj.CopyComplete
+C:\Users\diogo\Documents\Code\MailAccess-Checker\MailAccess-Checker\obj\Debug\MailAccess_Checker.exe
+C:\Users\diogo\Documents\Code\MailAccess-Checker\MailAccess-Checker\obj\Debug\MailAccess_Checker.pdb
