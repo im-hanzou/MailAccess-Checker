@@ -59,7 +59,7 @@ namespace MailAccess_Checker
       {
         try
         {
-          Console.Title = appName + " ~ Loaded: " + combo.Length + "~ Left: " + (combo.Length - bads) + " - Hits: " + hits + " - Bads: " + bads;
+          Console.Title = appName + " ~ Loaded: " + combo.Length + "~ Left: " + (combo.Length - (bads + hits)) + " - Hits: " + hits + " - Bads: " + bads;
 
           // Split the account
           string[] rawAccount = combo.ElementAt<String>(i).Split(':');
@@ -94,6 +94,7 @@ namespace MailAccess_Checker
 
             if (request.Contains("Ok=1"))
             {
+              hits++;
               Logger.Hit(username + ":" + password);
               hitsSaved.Add(username + ":" + password);
             }
