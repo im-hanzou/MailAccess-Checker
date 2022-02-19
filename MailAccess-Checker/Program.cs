@@ -15,9 +15,9 @@ namespace MailAccess_Checker
     internal class Program
     {
         public static int totalChecked, cpm, hits, bads, errors, threads, comboIndex;
-        public static string proxyType, webhooklink;
-        public static List<string> proxies, combos = new List<string>();
-        public static int Proxytotal, Combototal;
+        public static string webhooklink;
+        public static List<string> combos = new List<string>();
+        public static int Combototal;
         public static bool webhook;
 
         public static void Main(string[] args)
@@ -124,7 +124,6 @@ namespace MailAccess_Checker
                 {
                     try
                     {
-                        string proxy = proxies.ElementAt<string>(new Random().Next(proxies.Count));
                         var array = combos[comboIndex].Split(':', ';', '|');
                         Interlocked.Increment(ref comboIndex);
                         totalChecked++;
@@ -176,8 +175,8 @@ namespace MailAccess_Checker
                 combos = new List<string>(File.ReadAllLines(fileName));
                 Combototal = combos.Count();
                 Console.Write("Selected ", Color.White);
-                Console.Write(Proxytotal, Color.Purple);
-                Console.Write(" Proxies\n\n", Color.White);
+                Console.Write(Combototal, Color.Purple);
+                Console.Write(" Combos\n\n", Color.White);
             });
             x.SetApartmentState(ApartmentState.STA);
             x.Start();
