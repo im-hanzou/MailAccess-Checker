@@ -150,6 +150,7 @@ namespace MailAccess_Checker
                     }
                     catch (Exception ex)
                     {
+                        Console.WriteLine(ex.ToString());
                         errors++;
                     }
                 }
