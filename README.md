@@ -24,4 +24,4 @@ You must have .NET Framework 4.7.2 and that's all
 
 ## Thanks
 
-MY.COM - They have a nice API
+MY.COM aka Mail.Ru <3
