@@ -1,4 +1,4 @@
-# MailChecker | https://discord.gg/e7uQY6SPtb (Not a support server)
+# MailChecker
 A open-source MaillAcess checker | You must use good proxies.
 
 ## FAQ
@@ -17,8 +17,6 @@ A: I know, I made it in a few hours, so feel free to open a pull-request to upda
 
 Q: Where can I get  good proxies ?.\
 A: I don't know. I just code.
-
-buy aeris @ aeris.wtf
 
 ## Requirements
 
